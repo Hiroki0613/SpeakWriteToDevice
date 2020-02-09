@@ -24,7 +24,7 @@ class ViewController: UIViewController, SFSpeechRecognitionTaskDelegate {
         super.viewDidLoad()
         
         recordButton.isEnabled = false
-        speechRecognizer.delegate = self
+//        speechRecognizer.delegate = self
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -79,15 +79,15 @@ class ViewController: UIViewController, SFSpeechRecognitionTaskDelegate {
         let inputNode = audioEngine.inputNode
         
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest, resultHandler: { (result, error) in
+            
             var isFinal = false
             
             if let result = result {
-                //音声入力された結果をtextViewで表示
                 self.textView.text = result.bestTranscription.formattedString
                 isFinal = result.isFinal
             }
             
-            if error != nil || isFinal {
+            if error != nil || isFinal{
                 self.audioEngine.stop()
                 inputNode.removeTap(onBus: 0)
                 
@@ -97,20 +97,21 @@ class ViewController: UIViewController, SFSpeechRecognitionTaskDelegate {
                 self.recordButton.isEnabled = true
                 self.recordButton.setTitle("Start Recording", for: [])
                 self.recordButton.backgroundColor = .systemBlue
-                
-                let recordingFormat = inputNode.outputFormat(forBus: 0)
-                
-                inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer: AVAudioPCMBuffer, when: AVAudioTime) in
-                    self.recognitionRequest?.append(buffer)
-                }
-                
-                audioEngine.prepare()
-                try audioEngine.start()
-                
-                textView.text = "(認識中、そのまま話し続けてください)"
             }
         })
+        
+        let recordingFormat = inputNode.outputFormat(forBus: 0)
+        
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer: AVAudioPCMBuffer, when: AVAudioTime) in
+            self.recognitionRequest?.append(buffer)
+        }
+        
+        audioEngine.prepare()
+        try audioEngine.start()
+        
+        textView.text = "(認識中...そのまま話し続けてください)"
     }
+    
     
     
     public func speechRecognizer(_ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool) {
@@ -155,7 +156,6 @@ class ViewController: UIViewController, SFSpeechRecognitionTaskDelegate {
  
  音声認識(SFSpeechRecognizer)
  https://swiswiswift.com/2017-05-13/
- 
  
  【Speech Framework】【Swift4】音声認識してテキストを入力
  inputNodeのエラーについて調査
