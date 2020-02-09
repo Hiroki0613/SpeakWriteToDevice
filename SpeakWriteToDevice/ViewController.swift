@@ -9,7 +9,7 @@
 import UIKit
 import Speech
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, SFSpeechRecognitionTaskDelegate {
     
     // MARK: 音声入力、音声認識Properties
     private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ja-JP"))!
@@ -24,6 +24,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         recordButton.isEnabled = false
+        speechRecognizer.delegate = self
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -49,9 +50,10 @@ class ViewController: UIViewController {
                     self.recordButton.isEnabled = false
                     self.recordButton.setTitle("録音機能が無効", for: .disabled)
                 }
-                
             }
         }
+        
+        
     }
     
     private func startRecording() throws {
@@ -106,10 +108,24 @@ class ViewController: UIViewController {
                 try audioEngine.start()
                 
                 textView.text = "(認識中、そのまま話し続けてください)"
-                
             }
         })
     }
+    
+    
+    public func speechRecognizer(_ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool) {
+        if available {
+            //利用可能になたら、録音ボタンを有効にする
+            recordButton.isEnabled = true
+            recordButton.setTitle("Start Recording", for: [])
+            recordButton.backgroundColor = .systemBlue
+            
+        } else {
+            //利用できないなら、録音ボタンは無効にする
+            recordButton.isEnabled = false
+            recordButton.setTitle("現在、使用不可", for: .disabled)
+        }
+       }
     
 
     
@@ -123,6 +139,9 @@ class ViewController: UIViewController {
  参考にしたサイト
  【Speech Framework】音声認識してテキストを入力する
  https://qiita.com/chino_tweet/items/027c432cfb983f95679a
+ 
+ 音声認識(SFSpeechRecognizer)
+ https://swiswiswift.com/2017-05-13/
  
  
  【Speech Framework】【Swift4】音声認識してテキストを入力
