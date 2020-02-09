@@ -72,6 +72,43 @@ class ViewController: UIViewController {
         guard let recognitionRequest = recognitionRequest else { fatalError("リクエスト生成エラー")}
         
         recognitionRequest.shouldReportPartialResults = true
+        
+//        guard let inputNode = audioEngine.inputNode else { fatalError("InputNodeエラー")}
+        let inputNode = audioEngine.inputNode
+        
+        recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest, resultHandler: { (result, error) in
+            var isFinal = false
+            
+            if let result = result {
+                //音声入力された結果をtextViewで表示
+                self.textView.text = result.bestTranscription.formattedString
+                isFinal = result.isFinal
+            }
+            
+            if error != nil || isFinal {
+                self.audioEngine.stop()
+                inputNode.removeTap(onBus: 0)
+                
+                self.recognitionRequest = nil
+                self.recognitionTask = nil
+                
+                self.recordButton.isEnabled = true
+                self.recordButton.setTitle("Start Recording", for: [])
+                self.recordButton.backgroundColor = .systemBlue
+                
+                let recordingFormat = inputNode.outputFormat(forBus: 0)
+                
+                inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer: AVAudioPCMBuffer, when: AVAudioTime) in
+                    self.recognitionRequest?.append(buffer)
+                }
+                
+                audioEngine.prepare()
+                try audioEngine.start()
+                
+                textView.text = "(認識中、そのまま話し続けてください)"
+                
+            }
+        })
     }
     
 
@@ -87,7 +124,9 @@ class ViewController: UIViewController {
  【Speech Framework】音声認識してテキストを入力する
  https://qiita.com/chino_tweet/items/027c432cfb983f95679a
  
- 音声認識(SFSpeechRecognizer)
- https://swiswiswift.com/2017-05-13/
+ 
+ 【Speech Framework】【Swift4】音声認識してテキストを入力
+ inputNodeのエラーについて調査
+ https://teratail.com/questions/197061
  */
 
