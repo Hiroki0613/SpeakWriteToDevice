@@ -131,6 +131,19 @@ class ViewController: UIViewController, SFSpeechRecognitionTaskDelegate {
     
     
     @IBAction func recordButtonTapped(_ sender: Any) {
+        if audioEngine.isRunning {
+            //音声エンジン動作中なら停止
+            audioEngine.stop()
+            recognitionRequest?.endAudio()
+            recordButton.isEnabled = false
+            recordButton.setTitle("Stopping", for: .disabled)
+            recordButton.backgroundColor = .systemGray
+            return
+        }
+        //録音を開始する
+        try! startRecording()
+        recordButton.setTitle("認識を完了する", for: [])
+        recordButton.backgroundColor = .systemRed
     }
     
 }
