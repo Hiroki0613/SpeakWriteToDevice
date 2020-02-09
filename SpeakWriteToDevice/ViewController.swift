@@ -11,8 +11,11 @@ import Speech
 
 class ViewController: UIViewController {
     
-    private let speechRecoginizer = SFSpeechRecognizer(locale: Locale(identifier: "ja-JP"))!
-    privatevar recognitionTask = SFSpeechRecognitionTask?
+    // MARK: 音声入力、音声認識Properties
+    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ja-JP"))!
+    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    private var recognitionTask: SFSpeechRecognitionTask?
+    private let audioEngine = AVAudioEngine()
     
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var recordButton: UIButton!
@@ -50,6 +53,27 @@ class ViewController: UIViewController {
             }
         }
     }
+    
+    private func startRecording() throws {
+        //録音スタート処理を記述
+        if let recognitionTask = recognitionTask {
+            //既存タスクがあればキャンセルしてリセット
+            recognitionTask.cancel()
+            self.recognitionTask = nil
+        }
+        
+        let audioSession = AVAudioSession.sharedInstance()
+        try audioSession.setCategory(AVAudioSession.Category.record)
+        try audioSession.setMode(AVAudioSession.Mode.measurement)
+        try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+        
+        recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
+        
+        guard let recognitionRequest = recognitionRequest else { fatalError("リクエスト生成エラー")}
+        
+        recognitionRequest.shouldReportPartialResults = true
+    }
+    
 
     
     
@@ -62,5 +86,8 @@ class ViewController: UIViewController {
  参考にしたサイト
  【Speech Framework】音声認識してテキストを入力する
  https://qiita.com/chino_tweet/items/027c432cfb983f95679a
+ 
+ 音声認識(SFSpeechRecognizer)
+ https://swiswiswift.com/2017-05-13/
  */
 
